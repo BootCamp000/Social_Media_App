@@ -1,8 +1,9 @@
-package com.example.controller;
-import com.example.entity.Account;
-import com.example.entity.Message;
-import com.example.service.AccountService;
-import com.example.service.MessageService;
+// package com.example.controller;
+// import com.example.entity.Account;
+// import com.example.entity.Message;
+// import com.example.service.AccountService;
+// import com.example.service.MessageService;
+package com;
 
 import org.aspectj.weaver.ast.And;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,11 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.Message;
+import com.example.entity.Account;
+import com.example.service.MessageService;
+
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -27,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SocialMediaController {
 
     @PostMapping("/register")
-    public ResponseEntity createNewAccount(@RequestBody Account account) {
+    public ResponseEntity<Account> createNewAccount(@RequestBody Account account) {
         // (User Story 1) : API can process new user registration
         String username = account.getUsername();
         username.replace(" ", "");
@@ -56,8 +62,8 @@ public class SocialMediaController {
         return ResponseEntity.status(400).body("Client Error");
     }
 
-    @GetMapping(value= "login", params = {"account"})
-    public ResponseEntity getExistingAccountEntity(@RequestParam Account account) {
+    @GetMapping(value= "login", params = "account")
+    public ResponseEntity<Account> getExistingAccountEntity(@RequestParam Account account) {
         // (User Story 2) : API can process  user logins
 
 
@@ -73,8 +79,8 @@ public class SocialMediaController {
         // return ResponseEntity.status(401).body("unauthorized");
     }
     
-    @PostMapping(value = "messages", param = {"account","message"})
-    public ResponseEntity createNewMessage(@RequestBody Account account, @RequestBody Message message) {
+    @PostMapping(value = "messages", params = {"account","message"})
+    public ResponseEntity<Message> createNewMessage(@RequestBody Account account, @RequestBody Message message) {
         // (User Story 3) : API can process creation of new messages
 
 
@@ -94,7 +100,7 @@ public class SocialMediaController {
     }    
 
     @PostMapping(value = "messages")
-    public ResponseEntity retrieveAllMessage() {
+    public ResponseEntity<Message> retrieveAllMessage() {
         // (User Story 4) : API can retrieve all messages
 
         // Check : If There Are Messages To Display Or Is It An Empty List
@@ -106,8 +112,8 @@ public class SocialMediaController {
 
     }
 
-    @GetMapping(value = "messages", param = {"messageId"})
-    public ResponseEntity getExistingMessageById(RequestBody int messageId) {
+    @GetMapping(value = "messages", params = "messageId")
+    public ResponseEntity<Message> getExistingMessageById(RequestBody int messageId) {
         // (User Story 5) : API can retrieve a message by its id
 
         // Check : If messageId already exists
@@ -121,8 +127,8 @@ public class SocialMediaController {
 
     }
 
-    @GetMapping(value = "messages", param = {"accountId"})
-    public ResponseEntity getExistingMessage(@RequestBody Account account) {
+    @GetMapping(value = "messages", params = "accountId")
+    public ResponseEntity<Message> getExistingMessage(@RequestBody Account account) {
         // (User Story 8) : API can retrieve all messages written by a particular user
 
         // Check : If messageId already exists
@@ -134,8 +140,8 @@ public class SocialMediaController {
         return ResponseEntity.status(200).body("OK");
     }
 
-    @DeleteMapping(value = "messages", param = {"messageId"})
-    public ResponseEntity deleteExistingMessage(RequestBody int messageId) {
+    @DeleteMapping(value = "messages", params = "messageId")
+    public ResponseEntity<Message> deleteExistingMessage(RequestBody int messageId) {
         // (User Story 6) : API can delete a message identified by a messageId
 
         // Check : If messageId already exists
@@ -154,8 +160,8 @@ public class SocialMediaController {
         // return ResponseEntity.status(200).body("");
     }
 
-    @PatchMapping(value = "messages", param = {"messageId"})
-    public ResponseEntity updateExistingMessage(RequestBody int messageId) {
+    @PatchMapping(value = "messages", params = "messageId")
+    public ResponseEntity<Message> updateExistingMessage(RequestBody int messageId) {
         // (User Story 7) : API can update a message identified by a messageId
 
         // Check : If messageId already exists
