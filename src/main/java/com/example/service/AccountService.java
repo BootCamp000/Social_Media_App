@@ -1,5 +1,5 @@
-// package com.example.service;
-import com.*;
+package com.example.service;
+// import com.*;
 import com.example.repository.AccountRepository;
 
 import java.util.List;
@@ -8,17 +8,14 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-// import com.Message;
-// import com.example.repository.AccountRepository;
 
 import com.example.entity.Account;
-// import com.example.entity.Message;
-// import com.example.repository.AccountRepository;
 
 
 @Component
 public class AccountService {
 
+    @Autowired
     private AccountRepository accountRepository;
 
     @Autowired
@@ -48,7 +45,7 @@ public class AccountService {
     }
 
     // Delete A Specific Account Based On Its accountId
-    public int deleteExistingMessage(int Id) {
+    public int deleteExistingAccount(int Id) {
         try {
             accountRepository.deleteById(Id);
             return 1;

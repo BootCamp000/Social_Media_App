@@ -1,9 +1,10 @@
-// package com.example.controller;
+package com.example.controller;
 import com.example.entity.Account;
 import com.example.entity.Message;
 import com.example.service.AccountService;
 import com.example.service.MessageService;
-// package com.example.controller;
+
+import java.util.List;
 
 import org.aspectj.weaver.ast.And;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 public class SocialMediaController {
 
-    AccountService accountService;
-    MessageService messageService;
+    @Autowired
+    private AccountService accountService;
+    
+    @Autowired
+    private MessageService messageService;
     
     @Autowired
     public SocialMediaController(AccountService accountService, MessageService messageService) {
@@ -84,8 +88,7 @@ public class SocialMediaController {
         // If : Login Sucessful --> Then : New Account Persisted To Database
         // If : Login Sucessful --> Then : Response Status --> 200 (OK) --> default
         // If : Login Sucessful --> Then : Response Body --> json of Account including AccountId
-
-        return ResponseEntity.status(200).body(account.getAccountId(), account.getUsername(), account.getPassword());
+        return ResponseEntity.ok(account);
 
         // If : Login Unsucessful --> Then : Response Status --> 401 (unauthorized)
         // return ResponseEntity.status(401).body("unauthorized");
@@ -102,8 +105,8 @@ public class SocialMediaController {
         // If : Message Creation Sucessful --> Then : New Message Persisted To Database
         // If : Message Creation Sucessful --> Then : Response Status --> 200 --> default
         // If : Message Creation Sucessful --> Then : Response Body --> json of message including messagetId
-        messageService.persistMessage(message);
-        return ResponseEntity.status(200).body("OK");
+        Message messageBeingReturned = messageService.persistMessage(message);
+        return ResponseEntity.ok(messageBeingReturned);
 
         // If : Message Creation Unsucessful --> Then : Response Status --> 400 (Client Error)       
         // return ResponseEntity.status(400).body("Client Error");
@@ -112,20 +115,20 @@ public class SocialMediaController {
     }    
 
     @PostMapping(value = "messages")
-    public ResponseEntity<Message> retrieveAllMessage() {
+    public ResponseEntity<List<Message>> retrieveAllMessage() {
         // (User Story 4) : API can retrieve all messages
 
         // Check : If There Are Messages To Display Or Is It An Empty List
         // If : Message Retrieval Sucessful --> Then : Response Status --> 200 (OK) --> default
         // If : Message Retrieval Sucessful --> Then : Response Body --> JSON of list containing ALL messgaes retrieved from the database
         // If : Message Retrieval Sucessful --> No Messages To Display --> Then : Response Body --> Displays an empty list
-        messageService.getAllMessages();
-        return ResponseEntity.status(200).body("OK");
+        List<Message> messagesBeingReturned = messageService.getAllMessages();
+        return ResponseEntity.ok(messagesBeingReturned);
 
     }
 
     @GetMapping(value = "messages", params = "messageId")
-    public ResponseEntity<Message> getExistingMessageById(RequestBody int messageId) {
+    public ResponseEntity<Message> getExistingMessageById(@RequestBody int messageId) {
         // (User Story 5) : API can retrieve a message by its id
 
         // Check : If messageId already exists
@@ -133,14 +136,14 @@ public class SocialMediaController {
         // If : Message Retrieval Sucessful --> Then : Response Status --> 200 (OK) --> default
         // If : Message Retrieval Sucessful --> Then : Response Body --> JSON of messgae identified by messageId
         // If : Message Retrieval Sucessful --> No Such Messages --> Then : Response Body --> Empty
-        messageService.getExistingMessageById(messageId);
-        return ResponseEntity.status(200).body("OK");
+        Message messageBeingReturned = messageService.getExistingMessageById(messageId);
+        return ResponseEntity.ok(messageBeingReturned);
 
 
     }
 
     @GetMapping(value = "messages", params = "accountId")
-    public ResponseEntity<Message> getExistingMessage(@RequestBody Account account) {
+    public ResponseEntity<List<Message>> getExistingMessage(@RequestBody Account account) {
         // (User Story 8) : API can retrieve all messages written by a particular user
 
         // Check : If messageId already exists
@@ -149,11 +152,12 @@ public class SocialMediaController {
         // If : Message Retrieval Sucessful --> Then : Response Body --> JSON of list containing ALL messgaes posted by a particular user retrieved from the database
         // If : Message Retrieval Sucessful --> No Messages To Display --> Then : Response Body --> Empty
         // Need To Implement : MessageService.getExistingMessageById(account.getAccountId());
-        return ResponseEntity.status(200).body("OK");
+        List<Message> messagesBeingReturned = messageService.getAllMessagesByAccountId(account);
+        return ResponseEntity.ok(messagesBeingReturned);
     }
 
-    @DeleteMapping(value = "messages", params = "messageId")
-    public ResponseEntity<Message> deleteExistingMessage(RequestBody int messageId) {
+    @DeleteMapping(value = "messages", params = "messageid")
+    public ResponseEntity<String> deleteExistingMessage(@RequestBody Integer messageId) {
         // (User Story 6) : API can delete a message identified by a messageId
 
         // Check : If messageId already exists
@@ -162,11 +166,13 @@ public class SocialMediaController {
         // If : Message Deletion Sucessful --> Then : Response Status --> 200 (OK) --> default
         // If : Message Deletion Sucessful --> Then : Response Body --> Contains The Number Of Rows Updated (1)
         // MessageService.deleteExistingMessage(messageId);
-
-        return ResponseEntity.status(200).body(MessageService.deleteExistingMessage(messageId));
-
-        // if 1 vs if 0 response entity *
-
+        int wasSucessful = messageService.deleteExistingMessage(messageId);
+        if (wasSucessful == 1) {
+            return ResponseEntity.ok("1");
+        } else {
+            return ResponseEntity.ok("");
+        }
+        // return null;
         // If : Message Deletion Unsucessful --> Cause : Message Did Not Exist --> Then : Response Status --> 200 (OK) --> default
         // If : Message Deletion Unsucessful --> Cause : Message Did Not Exist --> Then : Response Body --> Empty
         // If : Message Deletion Unsucessful --> Cause : Other Reason --> Then : Response Status --> 200 (OK) --> default
@@ -175,7 +181,7 @@ public class SocialMediaController {
     }
 
     @PatchMapping(value = "messages", params = "messageId")
-    public ResponseEntity<Message> updateExistingMessage(RequestBody int messageId) {
+    public ResponseEntity<String> updateExistingMessage(@RequestBody Integer messageId, @RequestBody Message message) {
         // (User Story 7) : API can update a message identified by a messageId
 
         // Check : If messageId already exists
@@ -186,11 +192,14 @@ public class SocialMediaController {
         // If : Message Updation Sucessful --> Then : Should've updated messageText in the databse
         // If : Message Updation Sucessful --> Then : Response Status --> 200 (OK) --> default
         // If : Message Updation Sucessful --> Then : Response Body --> Contains The Number Of Rows Updated (1)
-        // If : Message Updation Sucessful --> Then : Response Body --> json of Account including AccountId
         // MessageService.updateExistingMessage(messageId);
-
-        return ResponseEntity.status(200).body(MessageService.updateExistingMessage(messageId));
-
+        int wasSucessful = messageService.updateExistingMessage(messageId, message);
+        if (wasSucessful == 1) {
+            return ResponseEntity.ok("1");
+        } else {
+            return ResponseEntity.ok("");
+        }
+        // return null;
         // If : Message Updation Unsucessful --> Cause : Any Reason --> Then : Response Status --> 400 (Client Error)
         // return ResponseEntity.status(400).body("Client Error");
     }
