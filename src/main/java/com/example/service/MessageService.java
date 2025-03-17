@@ -1,10 +1,15 @@
 // package com.example.service;
-package com;
+
 // import com.example.entity.Account;
 // import com.example.entity.Message;
 // import com.example.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+
+import com.example.entity.Message;
+import com.example.repository.MessageRepository;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +18,7 @@ public class MessageService {
     MessageRepository messageRepository;
 
     @Autowired
-    public MessageService(Message messageRepository) {
+    public MessageService(MessageRepository messageRepository) {
         this.messageRepository = messageRepository;
     }
 
@@ -29,7 +34,7 @@ public class MessageService {
 
     // Retrieve A Specific Message Based On Its MessageId
     // ** Retrieve A Specific Message For A User Based On Its MessageId
-    public List<Message> getExistingMessageById(int id) {
+    public Message getExistingMessageById(int id) {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
             return optionalMessage.get();
@@ -40,7 +45,14 @@ public class MessageService {
 
     // Delete A Specific Message Based On Its MessageId
     public int deleteExistingMessage(int Id) {
-        return messageRepository.deleteById(Id);
+
+        try {
+            messageRepository.deleteById(Id);
+            return 1;
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return 0;
     }
 
     // Update A Specific Message

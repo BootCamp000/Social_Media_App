@@ -1,12 +1,17 @@
 // package com.example.service;
-package com;
+import com.*;
+import com.example.repository.AccountRepository;
+
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-// import com.example.entity.Account;
+// import com.Message;
+// import com.example.repository.AccountRepository;
+
+import com.example.entity.Account;
 // import com.example.entity.Message;
 // import com.example.repository.AccountRepository;
 
@@ -14,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AccountService {
 
-    AccountRepository accountRepository;
+    private AccountRepository accountRepository;
 
     @Autowired
     public AccountService(AccountRepository accountRepository) {
@@ -23,18 +28,18 @@ public class AccountService {
 
 
     // Create New Account
-    public Message persistMessage(Account account) {
+    public Account persistAccount(Account account) {
         return accountRepository.save(account);
     }
 
     // Retrieve A List Of All Existing Accounts
-    public List<Message> getAllMessages() {
+    public List<Account> getAllAccounts() {
         return accountRepository.findAll();
     }
 
     // Retrieve A Specific Account Based On Its accountId
-    public List<Message> getExistingMessageById(int id) {
-        Optional<Message> optionalAccount = accountRepository.findById(id);
+    public Account getExistingAccountById(int id) {
+        Optional<Account> optionalAccount = accountRepository.findById(id);
         if (optionalAccount.isPresent()) {
             return optionalAccount.get();
         } else {
@@ -44,7 +49,13 @@ public class AccountService {
 
     // Delete A Specific Account Based On Its accountId
     public int deleteExistingMessage(int Id) {
-        return accountRepository.deleteById(Id);
+        try {
+            accountRepository.deleteById(Id);
+            return 1;
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return 0;
     }
 
 

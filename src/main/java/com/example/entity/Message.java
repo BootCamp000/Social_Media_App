@@ -1,5 +1,5 @@
-// package com.example.entity;
-package com;
+
+package com.example.entity;
 
 import javax.persistence.*;
 

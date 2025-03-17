@@ -1,11 +1,12 @@
 // package com.example.controller;
-// import com.example.entity.Account;
-// import com.example.entity.Message;
-// import com.example.service.AccountService;
-// import com.example.service.MessageService;
-package com;
+import com.example.entity.Account;
+import com.example.entity.Message;
+import com.example.service.AccountService;
+import com.example.service.MessageService;
+// package com.example.controller;
 
 import org.aspectj.weaver.ast.And;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +33,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 public class SocialMediaController {
 
+    AccountService accountService;
+    MessageService messageService;
+    
+    @Autowired
+    public SocialMediaController(AccountService accountService, MessageService messageService) {
+        this.accountService = accountService;
+        this.messageService = messageService;
+    }
+
+
     @PostMapping("/register")
     public ResponseEntity<Account> createNewAccount(@RequestBody Account account) {
         // (User Story 1) : API can process new user registration
@@ -51,15 +62,16 @@ public class SocialMediaController {
                 // If : Registration Sucessful --> Then : New Account Persisted To Database
                 // If : Registration Sucessful --> Then : Response Status --> 200 (default)
                 // If : Registration Sucessful --> Then : Response Body --> json of Account including AccountId
-                return ResponseEntity.status(200).body(new Account(account);
+                Account newlyCreatedAcct = accountService.persistAccount(account);
+                return ResponseEntity.ok(newlyCreatedAcct);
                 // return ResponseEntity.status(200).body(new AccountService(account);
             }
         } else { 
             // If : Registration Unsucessful --> Cause : Duplicate Username --> Then : Response Status --> 409 (conflict)
             // If : Registration Unsucessful --> Cause : Other Reason --> Then : Response Status --> 400 (Client Error)
-            return ResponseEntity.status(400).body("Client Error");
+            return ResponseEntity.status(409).build();
         }
-        return ResponseEntity.status(400).body("Client Error");
+        return ResponseEntity.status(400).build();
     }
 
     @GetMapping(value= "login", params = "account")
@@ -79,8 +91,8 @@ public class SocialMediaController {
         // return ResponseEntity.status(401).body("unauthorized");
     }
     
-    @PostMapping(value = "messages", params = {"account","message"})
-    public ResponseEntity<Message> createNewMessage(@RequestBody Account account, @RequestBody Message message) {
+    @PostMapping(value = "messages")
+    public ResponseEntity<Message> createNewMessage(@RequestBody Message message) {
         // (User Story 3) : API can process creation of new messages
 
 
@@ -90,7 +102,7 @@ public class SocialMediaController {
         // If : Message Creation Sucessful --> Then : New Message Persisted To Database
         // If : Message Creation Sucessful --> Then : Response Status --> 200 --> default
         // If : Message Creation Sucessful --> Then : Response Body --> json of message including messagetId
-        MessageService.persistMessage(message);
+        messageService.persistMessage(message);
         return ResponseEntity.status(200).body("OK");
 
         // If : Message Creation Unsucessful --> Then : Response Status --> 400 (Client Error)       
@@ -107,7 +119,7 @@ public class SocialMediaController {
         // If : Message Retrieval Sucessful --> Then : Response Status --> 200 (OK) --> default
         // If : Message Retrieval Sucessful --> Then : Response Body --> JSON of list containing ALL messgaes retrieved from the database
         // If : Message Retrieval Sucessful --> No Messages To Display --> Then : Response Body --> Displays an empty list
-        MessageService.getAllMessages();
+        messageService.getAllMessages();
         return ResponseEntity.status(200).body("OK");
 
     }
@@ -121,7 +133,7 @@ public class SocialMediaController {
         // If : Message Retrieval Sucessful --> Then : Response Status --> 200 (OK) --> default
         // If : Message Retrieval Sucessful --> Then : Response Body --> JSON of messgae identified by messageId
         // If : Message Retrieval Sucessful --> No Such Messages --> Then : Response Body --> Empty
-        MessageService.getExistingMessageById(messageId);
+        messageService.getExistingMessageById(messageId);
         return ResponseEntity.status(200).body("OK");
 
 
@@ -152,6 +164,8 @@ public class SocialMediaController {
         // MessageService.deleteExistingMessage(messageId);
 
         return ResponseEntity.status(200).body(MessageService.deleteExistingMessage(messageId));
+
+        // if 1 vs if 0 response entity *
 
         // If : Message Deletion Unsucessful --> Cause : Message Did Not Exist --> Then : Response Status --> 200 (OK) --> default
         // If : Message Deletion Unsucessful --> Cause : Message Did Not Exist --> Then : Response Body --> Empty
