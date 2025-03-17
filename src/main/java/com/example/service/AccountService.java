@@ -27,7 +27,7 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
-    // Retrieve A List Of All Existing Account
+    // Retrieve A List Of All Existing Accounts
     public List<Message> getAllMessages() {
         return accountRepository.findAll();
     }

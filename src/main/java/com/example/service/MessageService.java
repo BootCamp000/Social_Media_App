@@ -46,7 +46,8 @@ public class MessageService {
     // Update A Specific Message
     public int updateExistingMessage(Message message) {
         int messageid = message.getExistingMessageById();
-        Message messageToBeUpdated = messageRepository.findById(messageid);
+        // Message messageToBeUpdated = messageRepository.findById(messageid);
+        Message messageToBeUpdated = messageRepository.findById(messageid).get();
         messageToBeUpdated.setMessageText(message.getMessageText());
         return messageRepository.update(message);
     }
