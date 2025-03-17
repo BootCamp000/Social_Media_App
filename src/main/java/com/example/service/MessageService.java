@@ -4,11 +4,11 @@ import com.example.entity.Account;
 import com.example.entity.Message;
 import com.example.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Serviceervice;
+import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-@Service
+// @Service
 public class MessageService {
     MessageRepository messageRepository;
 
@@ -38,7 +38,18 @@ public class MessageService {
         }
     }
 
+    // Delete A Specific Message Based On Its MessageId
     public int deleteExistingMessage(int Id) {
-        messageRepository.deleteById(Id);
+        return messageRepository.deleteById(Id);
     }
+
+    // Update A Specific Message
+    public int updateExistingMessage(Message message) {
+        int messageid = message.getExistingMessageById();
+        Message messageToBeUpdated = messageRepository.findById(messageid);
+        messageToBeUpdated.setMessageText(message.getMessageText());
+        return messageRepository.update(message);
+    }
+
+
 }
