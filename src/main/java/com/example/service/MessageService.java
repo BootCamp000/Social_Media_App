@@ -1,6 +1,7 @@
 package com.example.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
@@ -24,8 +25,16 @@ public class MessageService {
     }
 
     // Create New Message
-    public Message persistMessage(Message message) {
-        return messageRepository.save(message);
+    public Message persistMessage(Message message) {      
+        String currentMessageText = message.getMessageText();
+        // Check : Message --> messageText is not blank               
+        if ((currentMessageText != null) && (currentMessageText != "") && (currentMessageText != " ")) {
+            // Sucessful Message Creation Constraints --> Check : Message --> messageText is <= 255 char 
+            if (currentMessageText.length() <= 255) {
+                return messageRepository.save(message);
+            }
+        }
+        return null;
     }
 
     // Retrieve A List Of All Existing Messages
@@ -46,8 +55,8 @@ public class MessageService {
 
     // Retrieve All Messages Based On AccountId
     // ** Retrieve A Specific Message For A User Based On Its MessageId
-    public List<Message> getAllMessagesByAccountId(int id) {
-        List<Message> messagesToBeReturned = messageRepository.findMessagesByAccountId(id);
+    public List<Message> getAllMessagesByAccountId(int postedBy) {
+        List<Message> messagesToBeReturned = messageRepository.findMessagesByAccountId(postedBy);
         if (!messagesToBeReturned.isEmpty()) {
             return messagesToBeReturned;
         } else {

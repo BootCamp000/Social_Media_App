@@ -5,6 +5,7 @@ import com.example.service.AccountService;
 import com.example.service.MessageService;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.aspectj.weaver.ast.And;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +17,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-// import com.Message;
-// import com.example.entity.Account;
-// import com.example.service.MessageService;
-
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -50,68 +46,104 @@ public class SocialMediaController {
     @PostMapping("/register")
     public ResponseEntity<Account> createNewAccount(@RequestBody Account account) {
         // (User Story 1) : API can process new user registration
+
         String username = account.getUsername();
         username.replace(" ", "");
 
         String password = account.getPassword();
         password.replace(" ", "");
         // Check : If Account already exists
-
-        // Check : Sucessful Registration
-        // Sucessful Account Creation Constraints --> Check : If Username --> Is Not null
-        // Sucessful Account Creation Constraints --> Check : If Username --> Is Not Blank
-        if ((username != null) && (username != "") && (username != " ")) {
-            // Sucessful Account Creation Constraints --> Check : If Password --> --> Is >= 4 char
-            if ((password != null) && (password.length() >= 4)) {
-                // If : Registration Sucessful --> Then : New Account Persisted To Database
-                // If : Registration Sucessful --> Then : Response Status --> 200 (default)
-                // If : Registration Sucessful --> Then : Response Body --> json of Account including AccountId
-                Account newlyCreatedAcct = accountService.persistAccount(account);
-                return ResponseEntity.ok(newlyCreatedAcct);
-                // return ResponseEntity.status(200).body(new AccountService(account);
+        try {
+            Boolean isValidAccount = accountService.isValidAccount(account);
+            if (isValidAccount){
+                // If : Registration Unsucessful --> Cause : Duplicate Username --> Then : Response Status --> 409 (conflict)
+                // return ResponseEntity.status(409).body(conflict);
+                return ResponseEntity.status(409).build();
+            } else { 
+                // Check : Sucessful Registration
+                // Sucessful Account Creation Constraints --> Check : If Username --> Is Not null
+                // Sucessful Account Creation Constraints --> Check : If Username --> Is Not Blank
+                if ((username != null) && (username != "") && (username != " ")) {
+                    // Sucessful Account Creation Constraints --> Check : If Password --> --> Is >= 4 char
+                    if ((password != null) && (password.length() >= 4)) {
+                        // If : Registration Sucessful --> Then : New Account Persisted To Database
+                        Account newlyCreatedAcct = accountService.persistAccount(account);
+    
+                        // If : Registration Sucessful --> Then : Response Status --> 200 (default)
+                        // If : Registration Sucessful --> Then : Response Body --> json of Account including AccountId
+                        return ResponseEntity.ok(newlyCreatedAcct);
+                        // return ResponseEntity.status(200).body(new AccountService(account);
+                    }
+                } else {
+                    // If : Registration Unsucessful --> Cause : Other Reason --> Then : Response Status --> 400 (Client Error)
+                    return ResponseEntity.status(409).build();
+                }
             }
-        } else { 
-            // If : Registration Unsucessful --> Cause : Duplicate Username --> Then : Response Status --> 409 (conflict)
-            // If : Registration Unsucessful --> Cause : Other Reason --> Then : Response Status --> 400 (Client Error)
-            return ResponseEntity.status(409).build();
+        } catch(Exception ex){
+            ex.printStackTrace();
         }
-        return ResponseEntity.status(400).build();
+        return ResponseEntity.status(409).build();
     }
 
-    @GetMapping(value= "login", params = "account")
+    @GetMapping(value= "login", params = {"account"})
     public ResponseEntity<Account> getExistingAccountEntity(@RequestParam Account account) {
         // (User Story 2) : API can process  user logins
 
-
-        // Check : Sucessful Login   
-        // Sucessful Login Constraints --> Check : If Account exists -->Username & Password match real account on database
-        // If : Login Sucessful --> Then : New Account Persisted To Database
-        // If : Login Sucessful --> Then : Response Status --> 200 (OK) --> default
-        // If : Login Sucessful --> Then : Response Body --> json of Account including AccountId
-        return ResponseEntity.ok(account);
-
-        // If : Login Unsucessful --> Then : Response Status --> 401 (unauthorized)
-        // return ResponseEntity.status(401).body("unauthorized");
+        try {
+            // Check : Sucessful Login   
+            // Sucessful Login Constraints --> Check : If Account exists --> Username & Password match real account on database
+            Boolean isValidAccount = accountService.isValidAccount(account);
+            if (isValidAccount){
+                // If : Login Sucessful --> Then : Response Status --> 200 (OK) --> default
+                // If : Login Sucessful --> Then : Response Body --> json of Account including AccountId
+                return ResponseEntity.ok(account);
+            } else { 
+                // If : Login Unsucessful --> Then : Response Status --> 401 (unauthorized)
+                // return ResponseEntity.status(401).body("unauthorized");
+                return ResponseEntity.status(401).build();
+            }
+        } catch(Exception ex){
+            ex.printStackTrace();
+        } 
+        return ResponseEntity.status(401).build();
     }
     
     @PostMapping(value = "messages")
     public ResponseEntity<Message> createNewMessage(@RequestBody Message message) {
         // (User Story 3) : API can process creation of new messages
 
-
-        // Check : Message --> messageText is not blank 
-        // Sucessful Message Creation Constraints --> Check : Message --> messageText is <= 255 char
         // Sucessful Message Creation Constraints --> Check : Message --> postedBy refers to a REAL, EXISTING User
-        // If : Message Creation Sucessful --> Then : New Message Persisted To Database
-        // If : Message Creation Sucessful --> Then : Response Status --> 200 --> default
-        // If : Message Creation Sucessful --> Then : Response Body --> json of message including messagetId
-        Message messageBeingReturned = messageService.persistMessage(message);
-        return ResponseEntity.ok(messageBeingReturned);
-
-        // If : Message Creation Unsucessful --> Then : Response Status --> 400 (Client Error)       
-        // return ResponseEntity.status(400).body("Client Error");
-
-
+        try {
+            String currentMessageText = message.getMessageText();
+            // Check : Message --> messageText is not blank            
+            if ((currentMessageText != null) && (currentMessageText != "") && (currentMessageText != " ")) {
+                // Sucessful Message Creation Constraints --> Check : Message --> messageText is <= 255 char 
+                if (currentMessageText.length() <= 255) {
+                    Integer currentAccountId = message.getPostedBy();
+                    Account postingUser = accountService.getExistingAccountById(currentAccountId);
+                    Boolean isValidAccount = accountService.isValidAccount(postingUser);
+                    if (isValidAccount){
+                        // If : Message Creation Sucessful --> Then : New Message Persisted To Database
+                        Message newlyCreatedMsg = messageService.persistMessage(message);
+                        // If : Message Creation Sucessful --> Then : Response Status --> 200 --> default
+                        // If : Message Creation Sucessful --> Then : Response Body --> json of message including messagetId
+                        return ResponseEntity.ok(newlyCreatedMsg);
+                    } else { 
+                        // If : Login Unsucessful --> Then : Response Status --> 401 (unauthorized)
+                        // return ResponseEntity.status(401).body("unauthorized");
+                        return ResponseEntity.status(401).build();
+                    }
+                }
+                return ResponseEntity.status(401).build();
+            } else {
+                // If : Login Unsucessful --> Then : Response Status --> 401 (unauthorized)
+                // return ResponseEntity.status(401).body("unauthorized");
+                return ResponseEntity.status(401).build();
+            }
+        } catch(Exception ex){
+            ex.printStackTrace();
+        } 
+        return ResponseEntity.status(401).build();
     }    
 
     @PostMapping(value = "messages")
@@ -127,7 +159,7 @@ public class SocialMediaController {
 
     }
 
-    @GetMapping(value = "messages", params = "messageId")
+    @GetMapping(value = "messages", params = {"messageId"})
     public ResponseEntity<Message> getExistingMessageById(@RequestBody int messageId) {
         // (User Story 5) : API can retrieve a message by its id
 
@@ -138,70 +170,82 @@ public class SocialMediaController {
         // If : Message Retrieval Sucessful --> No Such Messages --> Then : Response Body --> Empty
         Message messageBeingReturned = messageService.getExistingMessageById(messageId);
         return ResponseEntity.ok(messageBeingReturned);
-
-
     }
 
-    @GetMapping(value = "messages", params = "accountId")
+    @GetMapping(value = "messages", params = {"accountId"})
     public ResponseEntity<List<Message>> getExistingMessage(@RequestBody Account account) {
         // (User Story 8) : API can retrieve all messages written by a particular user
 
-        // Check : If messageId already exists
-        // Check : If A Message Can Be Retrieved Using An accoundId
-        // If : Message Retrieval Sucessful --> Then : Response Status --> 200 (OK) --> default
-        // If : Message Retrieval Sucessful --> Then : Response Body --> JSON of list containing ALL messgaes posted by a particular user retrieved from the database
-        // If : Message Retrieval Sucessful --> No Messages To Display --> Then : Response Body --> Empty
-        // Need To Implement : MessageService.getExistingMessageById(account.getAccountId());
-        List<Message> messagesBeingReturned = messageService.getAllMessagesByAccountId(account);
-        return ResponseEntity.ok(messagesBeingReturned);
+        // Check : If Message(s) Can Be Retrieved Using An accoundId
+        try {
+            Boolean isValidAccount = accountService.isValidAccount(account);
+            if (isValidAccount){
+                int postedByAccount = account.getAccountId();
+                List<Message> messagesBeingReturned = messageService.getAllMessagesByAccountId(postedByAccount);
+
+                // If : Message Retrieval Sucessful --> Then : Response Status --> 200 (OK) --> default
+                // If : Message Retrieval Sucessful --> Then : Response Body --> JSON of list containing ALL messgaes posted by a particular user retrieved from the database                
+                return ResponseEntity.ok(messagesBeingReturned);
+            }
+        } catch(Exception ex){
+            ex.printStackTrace();
+        } 
+        // If : Message Retrieval Sucessful --> No Messages To Display --> Then : Response Body --> Empty        
+        return ResponseEntity.status(401).build();
     }
 
-    @DeleteMapping(value = "messages", params = "messageid")
+    @DeleteMapping(value = "messages", params = {"messageid"})
     public ResponseEntity<String> deleteExistingMessage(@RequestBody Integer messageId) {
         // (User Story 6) : API can delete a message identified by a messageId
 
-        // Check : If messageId already exists
         // Check : If Message Exists in database using messageId
-        // If : Message Exists --> Then : Update messageText (message_text?) In Database
-        // If : Message Deletion Sucessful --> Then : Response Status --> 200 (OK) --> default
-        // If : Message Deletion Sucessful --> Then : Response Body --> Contains The Number Of Rows Updated (1)
-        // MessageService.deleteExistingMessage(messageId);
         int wasSucessful = messageService.deleteExistingMessage(messageId);
         if (wasSucessful == 1) {
+            // If : Message Deletion Sucessful --> Then : Response Status --> 200 (OK) --> default
+            // If : Message Deletion Sucessful --> Then : Response Body --> Contains The Number Of Rows Updated (1)
             return ResponseEntity.ok("1");
         } else {
+            // If : Message Deletion Unsucessful --> Cause : Other Reason --> Then : Response Status --> 200 (OK) --> default
+            // If : Message Deletion Unsucessful --> Cause : Other Reason --> Then : Response Body --> Empty) 
             return ResponseEntity.ok("");
         }
-        // return null;
-        // If : Message Deletion Unsucessful --> Cause : Message Did Not Exist --> Then : Response Status --> 200 (OK) --> default
-        // If : Message Deletion Unsucessful --> Cause : Message Did Not Exist --> Then : Response Body --> Empty
-        // If : Message Deletion Unsucessful --> Cause : Other Reason --> Then : Response Status --> 200 (OK) --> default
-        // If : Message Deletion Unsucessful --> Cause : Other Reason --> Then : Response Body --> Empty) 
-        // return ResponseEntity.status(200).body("");
     }
 
-    @PatchMapping(value = "messages", params = "messageId")
+    @PatchMapping(value = "messages", params = {"messageId"})
     public ResponseEntity<String> updateExistingMessage(@RequestBody Integer messageId, @RequestBody Message message) {
         // (User Story 7) : API can update a message identified by a messageId
 
-        // Check : If messageId already exists
-        // Sucessful Message Updation Constraints --> Check : If New Message --> new messageText --> Is Not Blank
-        // Sucessful Message Updation Constraints --> Check : If New Message --> new messageText --> Is <=255 char
-        // Check : If There A Message Exists using a messageId
-        // Sucessful Message Updation Constraints : Username & Password match real account on database
-        // If : Message Updation Sucessful --> Then : Should've updated messageText in the databse
-        // If : Message Updation Sucessful --> Then : Response Status --> 200 (OK) --> default
-        // If : Message Updation Sucessful --> Then : Response Body --> Contains The Number Of Rows Updated (1)
-        // MessageService.updateExistingMessage(messageId);
-        int wasSucessful = messageService.updateExistingMessage(messageId, message);
-        if (wasSucessful == 1) {
-            return ResponseEntity.ok("1");
-        } else {
-            return ResponseEntity.ok("");
-        }
-        // return null;
+        int wasSucessful = 0;
+        // Check : If Message Exists in database using messageId
+        try {
+            String currentMessageText = message.getMessageText();
+            // Sucessful Message Updation Constraints --> Check : If New Message --> new messageText --> Is Not Blank    
+            if ((currentMessageText != null) && (currentMessageText != "") && (currentMessageText != " ")) {
+            // Sucessful Message Updation Constraints --> Check : If New Message --> new messageText --> Is <=255 char
+                if (currentMessageText.length() <= 255) {
+                    Integer currentAccountId = message.getPostedBy();
+                    Account postingUser = accountService.getExistingAccountById(currentAccountId);
+                    Boolean isValidAccount = accountService.isValidAccount(postingUser);
+                    // Sucessful Message Updation Constraints : Username & Password match real account on database                    
+                    if (isValidAccount){
+                        // If : Message Updation Sucessful --> Then : Should've updated messageText in the databse                        
+                        wasSucessful = messageService.updateExistingMessage(messageId, message);
+                        if (wasSucessful == 1) {
+                            // If : Message Updation Sucessful --> Then : Response Status --> 200 (OK) --> default
+                            // If : Message Updation Sucessful --> Then : Response Body --> Contains The Number Of Rows Updated (1)
+                            return ResponseEntity.ok("1");
+                        } else {
+                            return ResponseEntity.ok("");
+                        }                        
+                    }
+                }
+            } 
+        } catch(Exception ex){
+            ex.printStackTrace();
+        } 
         // If : Message Updation Unsucessful --> Cause : Any Reason --> Then : Response Status --> 400 (Client Error)
         // return ResponseEntity.status(400).body("Client Error");
+        return ResponseEntity.status(400).build();
     }
 
 

@@ -23,7 +23,6 @@ public class AccountService {
         this.accountRepository = accountRepository;
     }
 
-
     // Create New Account
     public Account persistAccount(Account account) {
         return accountRepository.save(account);
@@ -42,6 +41,37 @@ public class AccountService {
         } else {
             return null;
         }
+    }
+
+    // Retrieve A Specific Account Based On Its Username
+    public Account getExistingAccountByUsername(Account account) {
+        String usernameBeingChecked = account.getUsername();
+        Optional<Account> optionalAccount = accountRepository.findByUsername(usernameBeingChecked);
+        if (optionalAccount.isPresent()) {
+            return optionalAccount.get();
+        } else {
+            return null;
+        }
+    }  
+    
+    // Check if account is present and username and passwords match
+    public Boolean isValidAccount(Account account) {
+        String usernameBeingChecked = account.getUsername();
+        String passwrodBeingChecked = account.getPassword();
+        try {
+            Optional<Account> optionalAccount = accountRepository.findByUsername(usernameBeingChecked);
+            if (optionalAccount.isPresent()) {
+                String currentPassword = optionalAccount.get().getPassword();
+                if (currentPassword == passwrodBeingChecked) {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return false;
     }
 
     // Delete A Specific Account Based On Its accountId
