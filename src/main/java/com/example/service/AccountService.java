@@ -1,18 +1,18 @@
 package com.example.service;
 // import com.*;
-import com.example.repository.AccountRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
+// import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.example.entity.Account;
+import com.example.repository.AccountRepository;
 
 
-@Component
+@Service
 public class AccountService {
 
     @Autowired
@@ -45,10 +45,11 @@ public class AccountService {
 
     // Retrieve A Specific Account Based On Its Username
     public Account getExistingAccountByUsername(Account account) {
-        String usernameBeingChecked = account.getUsername();
-        Optional<Account> optionalAccount = accountRepository.findByUsername(usernameBeingChecked);
+        String username = account.getUsername();
+        Optional<Account> optionalAccount = accountRepository.findByUsername(username);
         if (optionalAccount.isPresent()) {
-            return optionalAccount.get();
+            Account accountBeingReturned = optionalAccount.get();
+            return accountBeingReturned;
         } else {
             return null;
         }
@@ -56,10 +57,10 @@ public class AccountService {
     
     // Check if account is present and username and passwords match
     public Boolean isValidAccount(Account account) {
-        String usernameBeingChecked = account.getUsername();
+        String username = account.getUsername();
         String passwrodBeingChecked = account.getPassword();
         try {
-            Optional<Account> optionalAccount = accountRepository.findByUsername(usernameBeingChecked);
+            Optional<Account> optionalAccount = accountRepository.findByUsername(username);
             if (optionalAccount.isPresent()) {
                 String currentPassword = optionalAccount.get().getPassword();
                 if (currentPassword == passwrodBeingChecked) {
