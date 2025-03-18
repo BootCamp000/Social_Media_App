@@ -48,10 +48,16 @@ public class AccountService {
     // Retrieve A Specific Account Based On Its Username
     public Account getExistingAccountByUsername(Account account) {
         String username = account.getUsername();
-        Optional<Account> optionalAccount = accountRepository.findByUsername(username);
-        if (optionalAccount.isPresent()) {
-            Account accountBeingReturned = optionalAccount.get();
-            return accountBeingReturned;
+        // Optional<Account> optionalAccount = accountRepository.findByUsername(username);
+        // if (optionalAccount.isPresent()) {
+        //     Account accountBeingReturned = optionalAccount.get();
+        //     return accountBeingReturned;
+        // } else {
+        //     return null;
+        // }
+        Account optionalAccount = accountRepository.findByUsername(username);
+        if (optionalAccount != null) {
+            return optionalAccount;
         } else {
             return null;
         }
@@ -62,12 +68,26 @@ public class AccountService {
         String username = account.getUsername();
         String passwrodBeingChecked = account.getPassword();
         try {
-            Optional<Account> optionalAccount = accountRepository.findByUsername(username);
+            Account optionalAccount = accountRepository.findByUsername(username);
+            if (optionalAccount != null) {
+                    String currentPassword = optionalAccount.getPassword();
+                    if (currentPassword == passwrodBeingChecked) {
+                        return true;
+            }} else {
+                return false;
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }  
+    
+    // Check if account is present and username and passwords match
+    public Boolean isValidAccountById(int accountId) {
+        try {
+            Optional<Account> optionalAccount = accountRepository.findById(accountId);
             if (optionalAccount.isPresent()) {
-                String currentPassword = optionalAccount.get().getPassword();
-                if (currentPassword == passwrodBeingChecked) {
-                    return true;
-                }
+                        return true;
             } else {
                 return false;
             }
@@ -76,6 +96,7 @@ public class AccountService {
         }
         return false;
     }
+    
 
     // Delete A Specific Account Based On Its accountId
     public int deleteExistingAccount(int Id) {

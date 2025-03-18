@@ -46,7 +46,7 @@ public class MessageService {
 
     // Retrieve A Specific Message Based On Its MessageId
     // ** Retrieve A Specific Message For A User Based On Its MessageId
-    public Message getExistingMessageById(int id) {
+    public Message getMessageById(int id) {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
             return optionalMessage.get();
@@ -67,14 +67,19 @@ public class MessageService {
     }
 
     // Delete A Specific Message Based On Its MessageId
-    public int deleteExistingMessage(int Id) {
+    public String deleteExistingMessage(int Id) {
         try {
-            messageRepository.deleteById(Id);
-            return 1;
+            if(messageRepository.findById(Id).isPresent()){
+                messageRepository.deleteById(Id);
+                return "1";
+            } 
+            // else {
+            //     return "0";
+            // }
         } catch(Exception ex) {
             ex.printStackTrace();
         }
-        return 0;
+        return null;
     }
 
     // Update A Specific Message

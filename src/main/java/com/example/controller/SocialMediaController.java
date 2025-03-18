@@ -7,6 +7,8 @@ import com.example.service.MessageService;
 import java.util.List;
 import java.util.Optional;
 
+import javax.websocket.server.PathParam;
+
 import org.aspectj.weaver.ast.And;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -85,7 +88,8 @@ public class SocialMediaController {
         return ResponseEntity.status(409).build();
     }
 
-    @GetMapping(value= "login", params = {"account"})
+    // @GetMapping(value= "login", params = {"account"})
+    @GetMapping("/login/{account}")
     public ResponseEntity<Account> getExistingAccountEntity(@RequestParam Account account) {
         // (User Story 2) : API can process  user logins
 
@@ -108,7 +112,7 @@ public class SocialMediaController {
         return ResponseEntity.status(401).build();
     }
     
-    @PostMapping(value = "messages")
+    @PostMapping("/messages")
     public ResponseEntity<Message> createNewMessage(@RequestBody Message message) {
         // (User Story 3) : API can process creation of new messages
 
@@ -131,22 +135,23 @@ public class SocialMediaController {
                     } else { 
                         // If : Login Unsucessful --> Then : Response Status --> 401 (unauthorized)
                         // return ResponseEntity.status(401).body("unauthorized");
-                        return ResponseEntity.status(401).build();
+                        // return ResponseEntity.status(401).build();
+                        return ResponseEntity.status(400).build();
                     }
                 }
-                return ResponseEntity.status(401).build();
+                return ResponseEntity.status(400).build();
             } else {
                 // If : Login Unsucessful --> Then : Response Status --> 401 (unauthorized)
                 // return ResponseEntity.status(401).body("unauthorized");
-                return ResponseEntity.status(401).build();
+                return ResponseEntity.status(400).build();
             }
         } catch(Exception ex){
             ex.printStackTrace();
         } 
-        return ResponseEntity.status(401).build();
+        return ResponseEntity.status(400).build();
     }    
 
-    @PostMapping(value = "messages")
+    @GetMapping("/messages")
     public ResponseEntity<List<Message>> retrieveAllMessage() {
         // (User Story 4) : API can retrieve all messages
 
@@ -159,8 +164,9 @@ public class SocialMediaController {
 
     }
 
-    @GetMapping(value = "messages", params = {"messageId"})
-    public ResponseEntity<Message> getExistingMessageById(@RequestBody int messageId) {
+    // @GetMapping(value = "messages", params = {"messageId"})
+    @GetMapping("/messages/{messageId}")
+    public ResponseEntity<Message> getExistingMessageById(@RequestParam int messageId) {
         // (User Story 5) : API can retrieve a message by its id
 
         // Check : If messageId already exists
@@ -168,21 +174,21 @@ public class SocialMediaController {
         // If : Message Retrieval Sucessful --> Then : Response Status --> 200 (OK) --> default
         // If : Message Retrieval Sucessful --> Then : Response Body --> JSON of messgae identified by messageId
         // If : Message Retrieval Sucessful --> No Such Messages --> Then : Response Body --> Empty
-        Message messageBeingReturned = messageService.getExistingMessageById(messageId);
-        return ResponseEntity.ok(messageBeingReturned);
+        Message messageBeingReturned = messageService.getMessageById(messageId);
+        // return ResponseEntity.ok(messageBeingReturned);
+        return ResponseEntity.status(200).body(messageBeingReturned);
     }
 
-    @GetMapping(value = "messages", params = {"accountId"})
-    public ResponseEntity<List<Message>> getExistingMessage(@RequestBody Account account) {
+    // @GetMapping(value = "messages", params = {"accountId"})
+    @GetMapping("/messages/{accountId}")
+    public ResponseEntity<List<Message>> getExistingMessage(@RequestParam int accountId) {
         // (User Story 8) : API can retrieve all messages written by a particular user
 
         // Check : If Message(s) Can Be Retrieved Using An accoundId
         try {
-            Boolean isValidAccount = accountService.isValidAccount(account);
+            Boolean isValidAccount = accountService.isValidAccountById(accountId);
             if (isValidAccount){
-                int postedByAccount = account.getAccountId();
-                List<Message> messagesBeingReturned = messageService.getAllMessagesByAccountId(postedByAccount);
-
+                List<Message> messagesBeingReturned = messageService.getAllMessagesByAccountId(accountId);
                 // If : Message Retrieval Sucessful --> Then : Response Status --> 200 (OK) --> default
                 // If : Message Retrieval Sucessful --> Then : Response Body --> JSON of list containing ALL messgaes posted by a particular user retrieved from the database                
                 return ResponseEntity.ok(messagesBeingReturned);
@@ -194,25 +200,34 @@ public class SocialMediaController {
         return ResponseEntity.status(401).build();
     }
 
-    @DeleteMapping(value = "messages", params = {"messageid"})
-    public ResponseEntity<String> deleteExistingMessage(@RequestBody Integer messageId) {
+    @DeleteMapping("/messages/{messageId}")
+    public ResponseEntity<String> deleteExistingMessage(@PathVariable int messageId) {
         // (User Story 6) : API can delete a message identified by a messageId
-
-        // Check : If Message Exists in database using messageId
-        int wasSucessful = messageService.deleteExistingMessage(messageId);
-        if (wasSucessful == 1) {
-            // If : Message Deletion Sucessful --> Then : Response Status --> 200 (OK) --> default
-            // If : Message Deletion Sucessful --> Then : Response Body --> Contains The Number Of Rows Updated (1)
-            return ResponseEntity.ok("1");
-        } else {
-            // If : Message Deletion Unsucessful --> Cause : Other Reason --> Then : Response Status --> 200 (OK) --> default
-            // If : Message Deletion Unsucessful --> Cause : Other Reason --> Then : Response Body --> Empty) 
-            return ResponseEntity.ok("");
-        }
+        // try {
+            // Check : If Message Exists in database using messageId
+            String wasSucessful = messageService.deleteExistingMessage(messageId);
+            // if (wasSucessful == 1) {
+            //     // If : Message Deletion Sucessful --> Then : Response Status --> 200 (OK) --> default
+            //     // If : Message Deletion Sucessful --> Then : Response Body --> Contains The Number Of Rows Updated (1)
+            //     return ResponseEntity.ok("1");
+            //     // return ResponseEntity.status(200).body("1");
+            // } else {
+            //     // If : Message Deletion Unsucessful --> Cause : Other Reason --> Then : Response Status --> 200 (OK) --> default
+            //     // If : Message Deletion Unsucessful --> Cause : Other Reason --> Then : Response Body --> Empty) 
+            //     return ResponseEntity.ok("");
+            //     // return ResponseEntity.status(200).body("");
+            // }
+            return ResponseEntity.ok(wasSucessful);
+        // } catch(Exception ex){
+        //     ex.printStackTrace();
+        // }
+        // return ResponseEntity.status(200).body("");
+        // return ResponseEntity.ok("");
     }
 
-    @PatchMapping(value = "messages", params = {"messageId"})
-    public ResponseEntity<String> updateExistingMessage(@RequestBody Integer messageId, @RequestBody Message message) {
+    // @PatchMapping(value = "messages", params = {"messageId"})
+    @PatchMapping("/messages/{messageId}")
+    public ResponseEntity<String> updateExistingMessage(@RequestParam int messageId, @RequestBody Message message) {
         // (User Story 7) : API can update a message identified by a messageId
 
         int wasSucessful = 0;
@@ -233,9 +248,10 @@ public class SocialMediaController {
                         if (wasSucessful == 1) {
                             // If : Message Updation Sucessful --> Then : Response Status --> 200 (OK) --> default
                             // If : Message Updation Sucessful --> Then : Response Body --> Contains The Number Of Rows Updated (1)
-                            return ResponseEntity.ok("1");
+                            // return ResponseEntity.ok("1");
+                            return ResponseEntity.status(200).body("1");
                         } else {
-                            return ResponseEntity.ok("");
+                            return ResponseEntity.status(200).body("");
                         }                        
                     }
                 }
