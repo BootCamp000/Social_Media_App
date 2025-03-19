@@ -83,7 +83,7 @@ public class AccountService {
         return false;
     }  
     
-    // Check if account is present and username and passwords match
+    // Check if account is present in databse using accountId
     public Boolean isValidAccountById(int accountId) {
         try {
             Optional<Account> optionalAccount = accountRepository.findById(accountId);

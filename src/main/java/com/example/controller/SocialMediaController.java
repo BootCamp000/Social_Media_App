@@ -139,16 +139,19 @@ public class SocialMediaController {
                         return ResponseEntity.status(400).build();
                     }
                 }
-                return ResponseEntity.status(400).build();
+                // return ResponseEntity.status(400).build(); 
+                return ResponseEntity.badRequest().build();
             } else {
                 // If : Login Unsucessful --> Then : Response Status --> 401 (unauthorized)
                 // return ResponseEntity.status(401).body("unauthorized");
-                return ResponseEntity.status(400).build();
+                // return ResponseEntity.status(400).build(); 
+                return ResponseEntity.badRequest().build();
             }
         } catch(Exception ex){
             ex.printStackTrace();
         } 
-        return ResponseEntity.status(400).build();
+        // return ResponseEntity.status(400).build(); 
+        return ResponseEntity.badRequest().build();
     }    
 
     @GetMapping("/messages")
@@ -199,7 +202,8 @@ public class SocialMediaController {
             ex.printStackTrace();
         } 
         // If : Message Retrieval Sucessful --> No Messages To Display --> Then : Response Body --> Empty        
-        return ResponseEntity.status(401).build();
+        // return ResponseEntity.status(401).build(); 
+        return ResponseEntity.badRequest().build();
     }
 
     @DeleteMapping("/messages/{messageId}")
@@ -250,6 +254,7 @@ public class SocialMediaController {
                         return ResponseEntity.ok(wasSucessful);
                     } else {
                         return ResponseEntity.ok(wasSucessful);
+                        // return ResponseEntity.badRequest().build();
                     }
                     // Boolean isValidAccount = accountService.isValidAccount(postingUser);
                     
@@ -270,17 +275,15 @@ public class SocialMediaController {
                     // }
                 }
             } 
-            return ResponseEntity.ok(wasSucessful); 
+            // return ResponseEntity.ok(wasSucessful); 
+            return ResponseEntity.badRequest().build();
         } catch(Exception ex){
             ex.printStackTrace();
         } 
         // If : Message Updation Unsucessful --> Cause : Any Reason --> Then : Response Status --> 400 (Client Error)
         // return ResponseEntity.status(400).body("Client Error");
         // return ResponseEntity.status(400).build();
-        return ResponseEntity.ok(wasSucessful); 
+        // return ResponseEntity.ok(wasSucessful); 
+        return ResponseEntity.badRequest().build();
     }
-
-
-
-
 }
