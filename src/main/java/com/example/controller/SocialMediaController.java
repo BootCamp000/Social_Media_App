@@ -89,8 +89,8 @@ public class SocialMediaController {
     }
 
     // @GetMapping(value= "login", params = {"account"})
-    @GetMapping("/login/{account}")
-    public ResponseEntity<Account> getExistingAccountEntity(@RequestParam Account account) {
+    @GetMapping("/login")
+    public ResponseEntity<Account> getExistingAccountEntity(@RequestBody Account account) {
         // (User Story 2) : API can process  user logins
 
         try {
@@ -166,7 +166,7 @@ public class SocialMediaController {
 
     // @GetMapping(value = "messages", params = {"messageId"})
     @GetMapping("/messages/{messageId}")
-    public ResponseEntity<Message> getExistingMessageById(@RequestParam int messageId) {
+    public ResponseEntity<Message> getExistingMessageById(@PathVariable int messageId) {
         // (User Story 5) : API can retrieve a message by its id
 
         // Check : If messageId already exists
@@ -180,8 +180,10 @@ public class SocialMediaController {
     }
 
     // @GetMapping(value = "messages", params = {"accountId"})
-    @GetMapping("/messages/{accountId}")
-    public ResponseEntity<List<Message>> getExistingMessage(@RequestParam int accountId) {
+    // @GetMapping("/messages/{accountId}/messages")
+    // public ResponseEntity<List<Message>> getExistingMessage(@RequestParam int accountId) {
+    @GetMapping("/messages/{accountId}/messages")
+    public ResponseEntity<List<Message>> getExistingMessage(@PathVariable int accountId) {
         // (User Story 8) : API can retrieve all messages written by a particular user
 
         // Check : If Message(s) Can Be Retrieved Using An accoundId
@@ -226,42 +228,56 @@ public class SocialMediaController {
     }
 
     // @PatchMapping(value = "messages", params = {"messageId"})
+    // @PatchMapping("/messages/{messageId}")
+    // public ResponseEntity<String> updateExistingMessage(@RequestParam int messageId, @RequestBody Message message) {
     @PatchMapping("/messages/{messageId}")
-    public ResponseEntity<String> updateExistingMessage(@RequestParam int messageId, @RequestBody Message message) {
+    public ResponseEntity<String> updateExistingMessage(@PathVariable int messageId, @RequestBody Message message) {
         // (User Story 7) : API can update a message identified by a messageId
 
-        int wasSucessful = 0;
+        String wasSucessful = "";
         // Check : If Message Exists in database using messageId
         try {
             String currentMessageText = message.getMessageText();
             // Sucessful Message Updation Constraints --> Check : If New Message --> new messageText --> Is Not Blank    
             if ((currentMessageText != null) && (currentMessageText != "") && (currentMessageText != " ")) {
             // Sucessful Message Updation Constraints --> Check : If New Message --> new messageText --> Is <=255 char
-                if (currentMessageText.length() <= 255) {
+                int lengthOfMessage = currentMessageText.length();
+                if (lengthOfMessage <= 255) {
                     Integer currentAccountId = message.getPostedBy();
                     Account postingUser = accountService.getExistingAccountById(currentAccountId);
-                    Boolean isValidAccount = accountService.isValidAccount(postingUser);
-                    // Sucessful Message Updation Constraints : Username & Password match real account on database                    
-                    if (isValidAccount){
-                        // If : Message Updation Sucessful --> Then : Should've updated messageText in the databse                        
+                    if (postingUser != null) {
                         wasSucessful = messageService.updateExistingMessage(messageId, message);
-                        if (wasSucessful == 1) {
-                            // If : Message Updation Sucessful --> Then : Response Status --> 200 (OK) --> default
-                            // If : Message Updation Sucessful --> Then : Response Body --> Contains The Number Of Rows Updated (1)
-                            // return ResponseEntity.ok("1");
-                            return ResponseEntity.status(200).body("1");
-                        } else {
-                            return ResponseEntity.status(200).body("");
-                        }                        
+                        return ResponseEntity.ok(wasSucessful);
+                    } else {
+                        return ResponseEntity.ok(wasSucessful);
                     }
+                    // Boolean isValidAccount = accountService.isValidAccount(postingUser);
+                    
+                    // Sucessful Message Updation Constraints : Username & Password match real account on database                    
+                    // if (isValidAccount){
+                        // If : Message Updation Sucessful --> Then : Should've updated messageText in the databse                        
+                        // wasSucessful = messageService.updateExistingMessage(messageId, message);
+                        // if (wasSucessful == 1) {
+                        //     // If : Message Updation Sucessful --> Then : Response Status --> 200 (OK) --> default
+                        //     // If : Message Updation Sucessful --> Then : Response Body --> Contains The Number Of Rows Updated (1)
+                        //     // return ResponseEntity.ok("1");
+                        //     return ResponseEntity.status(200).body("1");
+                        // } else {
+                        //     return ResponseEntity.status(200).body("");
+                        // }
+                        // return ResponseEntity.status(200).body(wasSucessful);   
+                        // return ResponseEntity.ok(wasSucessful);                        
+                    // }
                 }
             } 
+            return ResponseEntity.ok(wasSucessful); 
         } catch(Exception ex){
             ex.printStackTrace();
         } 
         // If : Message Updation Unsucessful --> Cause : Any Reason --> Then : Response Status --> 400 (Client Error)
         // return ResponseEntity.status(400).body("Client Error");
-        return ResponseEntity.status(400).build();
+        // return ResponseEntity.status(400).build();
+        return ResponseEntity.ok(wasSucessful); 
     }
 
 

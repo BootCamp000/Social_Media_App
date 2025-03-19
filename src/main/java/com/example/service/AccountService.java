@@ -73,7 +73,8 @@ public class AccountService {
                     String currentPassword = optionalAccount.getPassword();
                     if (currentPassword == passwrodBeingChecked) {
                         return true;
-            }} else {
+            }
+        } else {
                 return false;
             }
         } catch(Exception ex) {

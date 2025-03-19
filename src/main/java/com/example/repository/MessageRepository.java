@@ -16,6 +16,6 @@ public interface MessageRepository extends JpaRepository <Message, Integer> {
     // @Query("SELECT * FROM message WHERE postedBy = :postedBY")
     // @Query("FROM message WHERE postedBy = :postedBY")
     // @Query("SELECT List<Message> FROM message WHERE postedBy = :postedBY")
-    // @Query(value = "SELECT * FROM message WHERE postedBy = :postedBy", nativeQuery = true)
-    // List<Message> findMessagesByAccountId(@Param("postedBy") int postedBy);
+    @Query(value = "SELECT * FROM message WHERE postedBy = :postedBy", nativeQuery = true)
+    List<Message> findMessagesByAccountId(@Param("postedBy") int postedBy);
 }

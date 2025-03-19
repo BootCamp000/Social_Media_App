@@ -83,16 +83,16 @@ public class MessageService {
     }
 
     // Update A Specific Message
-    public int updateExistingMessage(int Id, Message message) {
+    public String updateExistingMessage(int Id, Message message) {
         try {
             Message messageToBeUpdated = messageRepository.findById(Id).get();
             messageToBeUpdated.setMessageText(message.getMessageText());
             messageRepository.save(messageToBeUpdated);
-            return 1;
+            return "1";
         } catch(Exception ex) {
             ex.printStackTrace();
         }
-        return 0;
+        return null;
     }
 
 
