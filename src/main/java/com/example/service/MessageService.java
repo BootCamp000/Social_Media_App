@@ -1,16 +1,11 @@
 package com.example.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.http.ResponseEntity;
-// import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-// import com.example.entity.Account;
-// import com.example.repository.AccountRepository;
 import com.example.entity.Message;
 import com.example.repository.MessageRepository;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,8 +39,7 @@ public class MessageService {
         return messageRepository.findAll();
     }
 
-    // Retrieve A Specific Message Based On Its MessageId
-    // ** Retrieve A Specific Message For A User Based On Its MessageId
+    // Retrieve A Specific Message For A User Based On Its MessageId
     public Message getMessageById(int id) {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
@@ -55,15 +49,17 @@ public class MessageService {
         }
     }
 
-    // Retrieve All Messages Based On AccountId
-    // ** Retrieve A Specific Message For A User Based On Its MessageId
+    // Retrieve All Messages For A User 
     public List<Message> getAllMessagesByAccountId(int postedBy) {
-        List<Message> messagesToBeReturned = messageRepository.findMessagesByAccountId(postedBy);
-        if (!messagesToBeReturned.isEmpty()) {
-            return messagesToBeReturned;
-        } else {
-            return null;
+        List<Message> messagesToBeReturned = messageRepository.findAll();
+        List<Message> filteredMessagesToBeReturned = new ArrayList<>();
+        for(int i=0; i<messagesToBeReturned.size(); i++) {
+            if(messagesToBeReturned.get(i).getPostedBy() == postedBy) {
+                filteredMessagesToBeReturned.add(messagesToBeReturned.get(i));
+            }
         }
+       
+        return filteredMessagesToBeReturned;
     }
 
     // Delete A Specific Message Based On Its MessageId
@@ -72,10 +68,7 @@ public class MessageService {
             if(messageRepository.findById(Id).isPresent()){
                 messageRepository.deleteById(Id);
                 return "1";
-            } 
-            // else {
-            //     return "0";
-            // }
+            }
         } catch(Exception ex) {
             ex.printStackTrace();
         }
@@ -85,10 +78,15 @@ public class MessageService {
     // Update A Specific Message
     public String updateExistingMessage(int Id, Message message) {
         try {
-            Message messageToBeUpdated = messageRepository.findById(Id).get();
-            messageToBeUpdated.setMessageText(message.getMessageText());
-            messageRepository.save(messageToBeUpdated);
-            return "1";
+            if((message.getMessageText().length() < 255) && (message.getMessageText().length() > 0)) {
+                Optional<Message> existingMessage = messageRepository.findById(Id);
+                if(existingMessage.isPresent()) {
+                    Message messageToBeUpdated = existingMessage.get();
+                    messageToBeUpdated.setMessageText(message.getMessageText());
+                    messageRepository.save(messageToBeUpdated);
+                    return "1";
+                }
+            }
         } catch(Exception ex) {
             ex.printStackTrace();
         }
