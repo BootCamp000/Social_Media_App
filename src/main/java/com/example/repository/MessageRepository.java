@@ -8,5 +8,8 @@ import com.example.entity.Message;
 
 @Repository
 public interface MessageRepository extends JpaRepository <Message, Integer> {
+
+    @Query(value = "SELECT * FROM message WHERE postedBy = :postedBy", nativeQuery = true)
+    List<Message> findMessagesByAccountId(@Param("postedBy") int postedBy);
     
 }
